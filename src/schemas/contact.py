@@ -5,8 +5,8 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class ContactSchema(BaseModel):
-    name: str
-    surname: str
+    name: str = Field(min_length=3, max_length=50)
+    surname: str  = Field(min_length=3, max_length=50)
     phone_number: str
     email: EmailStr
     birthday: date
