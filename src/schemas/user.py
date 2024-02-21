@@ -13,9 +13,9 @@ class UserSchema(BaseModel):
 
 class UserResponse(BaseModel):
     id: int = 1
-    username = str
-    email = str
-    avatar = str
+    username: str
+    email: str
+    avatar: str
 
     class Config:
         from_attributes = True

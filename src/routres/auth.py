@@ -1,6 +1,7 @@
 from datetime import date
 
 from fastapi import APIRouter, HTTPException, Depends, Security, status, Path, Query
+from fastapi.security import HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -12,7 +13,7 @@ from src.schemas.user  import UserSchema, UserResponse, TokenSchema
 router = APIRouter(prefix='/auth', tags=['auth'])
 
 @router.post("/signup")
-async def signup(body: UserModel, db: AsyncSession = Depends(get_db)):
+async def signup(body: UserSchema, db: AsyncSession = Depends(get_db)):
     # exist_user = db.query(User).filter(User.email == body.username).first()
     # if exist_user:
     #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Account already exists")
@@ -41,7 +42,7 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = 
 
 
 @router.get('/refresh_token')
-async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(security), db: AsyncSession = Depends(get_db)):
+async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(), db: AsyncSession = Depends(get_db)):
     # token = credentials.credentials
     # email = await get_email_form_refresh_token(token)
     # user = db.query(User).filter(User.email == email).first()
