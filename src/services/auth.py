@@ -16,7 +16,6 @@ class Auth:
     
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     SECRET_KEY = "af25160bfe725f16e26c5b7db161ea1d22c91032c501d83cac2d7966b6e1d2e6"
-
     ALGORITHM = "HS256"
 
     def verify_password(self, plain_password, hashed_password):
@@ -25,13 +24,12 @@ class Auth:
     def get_password_hash(self, password: str):
         return self.pwd_context.hash(password)
 
-
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
 
     # define a function to generate a new access token
     async def create_access_token(self, data: dict, expires_delta: Optional[float] = None):
-        to_encode = data.copy() #copy
+        to_encode = data.copy() 
         if expires_delta:
             expire = datetime.utcnow() + timedelta(seconds=expires_delta) # time now + how long the token will be valid
         else:
@@ -84,3 +82,5 @@ class Auth:
         if user is None:
             raise credentials_exception
         return user
+
+auth_service = Auth()
