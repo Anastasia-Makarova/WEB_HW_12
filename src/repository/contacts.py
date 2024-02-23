@@ -3,39 +3,39 @@ from datetime import timedelta, datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.entity.models import Contact
+from src.entity.models import Contact, User
 from src.schemas.contact import ContactSchema
 
 
-async def get_contacts(limit: int, offset: int, db: AsyncSession):
-    stmt = select(Contact).offset(offset).limit(limit)
+async def get_contacts(limit: int, offset: int, db: AsyncSession, user: User):
+    stmt = select(Contact).filter_by(user=user).offset(offset).limit(limit)
     contacts = await db.execute(stmt)
     return contacts.scalars().all()
 
-async def search_contact_by_name(contact_name: str, db: AsyncSession):
-    stmt = select(Contact).filter_by(name=contact_name)
+async def search_contact_by_name(contact_name: str, db: AsyncSession, user: User):
+    stmt = select(Contact).filter_by(name=contact_name, user=user)
     contact = await db.execute(stmt)
     return contact.scalars().all()
 
 
-async def search_contact_by_surname(contact_surname: str, db: AsyncSession):
-    stmt = select(Contact).filter_by(surname=contact_surname)
+async def search_contact_by_surname(contact_surname: str, db: AsyncSession, user: User):
+    stmt = select(Contact).filter_by(surname=contact_surname, user=user)
     contact = await db.execute(stmt)
     return contact.scalars().all()
 
 
-async def search_contact_by_email(contact_email: str, db: AsyncSession):
-    stmt = select(Contact).filter_by(email=contact_email)
+async def search_contact_by_email(contact_email: str, db: AsyncSession, user: User):
+    stmt = select(Contact).filter_by(email=contact_email, user=user)
     contact = await db.execute(stmt)
     return contact.scalar_one_or_none()
 
 
-async def get_contact_by_birthday(n:int, db: AsyncSession):
+async def get_contact_by_birthday(n:int, db: AsyncSession, user: User):
     start = datetime.now()
     seven_days_later = start+ timedelta(days=n)
     contacts_with_bdays = []
 
-    stmt = select(Contact).where(Contact.birthday != None)
+    stmt = select(Contact).filter_by(user=user).where(Contact.birthday != None)
     contacts = await db.execute(stmt)
     contacts = contacts.scalars().all()
     
@@ -48,14 +48,14 @@ async def get_contact_by_birthday(n:int, db: AsyncSession):
     return contacts_with_bdays
 
 
-async def get_contact(contact_id:int, db: AsyncSession):
-    stmt = select(Contact).filter_by(id=contact_id)
+async def get_contact(contact_id:int, db: AsyncSession, user: User):
+    stmt = select(Contact).filter_by(id=contact_id, user=user)
     contact = await db.execute(stmt)
     return contact.scalar_one_or_none()
 
 
-async def create_contact(body: ContactSchema, db: AsyncSession):
-    contact = Contact(**body.model_dump(exclude_unset=True))
+async def create_contact(body: ContactSchema, db: AsyncSession, user: User):
+    contact = Contact(**body.model_dump(exclude_unset=True), user=user)
     db.add(contact)
     await db.commit()
     await db.refresh(contact)
@@ -63,8 +63,8 @@ async def create_contact(body: ContactSchema, db: AsyncSession):
 
 
 
-async def update_contact(contact_id: int, body: ContactSchema, db: AsyncSession):
-    stmt = select(Contact).filter_by(id=contact_id)
+async def update_contact(contact_id: int, body: ContactSchema, db: AsyncSession, user: User):
+    stmt = select(Contact).filter_by(id=contact_id, user=user)
     result = await db.execute(stmt)
     contact = result.scalar_one_or_none()
     if contact:
@@ -75,13 +75,13 @@ async def update_contact(contact_id: int, body: ContactSchema, db: AsyncSession)
         contact.birthday = body.birthday
         contact.notes = body.notes
         await db.commit()
-        await db.refresh()
+        await db.refresh(contact)
     return contact
     
 
 
-async def delete_contact(contact_id:int, db: AsyncSession):
-    stmt = select(Contact).filter_by(id=contact_id)
+async def delete_contact(contact_id:int, db: AsyncSession, user: User):
+    stmt = select(Contact).filter_by(id=contact_id, user=user)
     contact = await db.execute(stmt)
     contact = contact.scalar_one_or_none()
     if contact:
