@@ -31,6 +31,6 @@ async def create_user(body: UserSchema, db: AsyncSession = Depends(get_db)):
     return new_user
 
 
-async def update_token(user: User, token: str, db: AsyncSession = Depends(get_db)):
+async def update_token(user: User, token: str | None, db: AsyncSession = Depends(get_db)):
     user.refresh_token = token
     await db.commit()
